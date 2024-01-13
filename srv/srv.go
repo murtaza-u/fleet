@@ -18,10 +18,10 @@ type Srv struct {
 func New(optfns ...OptFunc) (*Srv, error) {
 	o := defaultOpts()
 	for _, fn := range optfns {
-		err := fn(&o)
-		if err != nil {
-			return nil, err
-		}
+		fn(&o)
+	}
+	if err := o.validate(); err != nil {
+		return nil, err
 	}
 	return &Srv{
 		opts:  o,
