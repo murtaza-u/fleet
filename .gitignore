@@ -23,5 +23,4 @@ go.work
 /.direnv
 /.envrc
 /bin
-/cmd
 /certs

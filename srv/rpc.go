@@ -119,6 +119,7 @@ func (s Srv) runRPC() error {
 	if err != nil {
 		return err
 	}
+
 	var opts []grpc.ServerOption
 	if s.tls {
 		certs, err := loadTLSCreds(s.cert, s.priv)
@@ -128,6 +129,10 @@ func (s Srv) runRPC() error {
 		opts = []grpc.ServerOption{grpc.Creds(certs)}
 	}
 	opts = append(opts, gRPCKeepAliveOpts()...)
+	opts = append(opts,
+		grpc.MaxRecvMsgSize(s.maxRecvSize),
+		grpc.MaxSendMsgSize(s.maxSendSize))
+
 	grpcS := grpc.NewServer(opts...)
 	pb.RegisterFleetServer(grpcS, s)
 	if s.reflect {

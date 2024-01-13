@@ -27,6 +27,10 @@ type opts struct {
 	priv string
 	// enable server-side TLS
 	tls bool
+	// maximum receive message size
+	maxRecvSize int
+	// maximum send message size
+	maxSendSize int
 }
 
 // WithRPCPort sets the port for the gRPC server. Ensure that the chosen
@@ -132,6 +136,26 @@ func WithTLS() OptFunc {
 	}
 }
 
+// WithMaxMsgRecvSize sets the maximum gRPC receive message size.
+//
+// Default: 1 MB (1024 * 1024)
+func WithMaxMsgRecvSize(size int) OptFunc {
+	return func(o *opts) error {
+		o.maxRecvSize = size
+		return nil
+	}
+}
+
+// WithMaxMsgSendSize sets the maximum gRPC send message size.
+//
+// Default: 1 MB (1024 * 1024)
+func WithMaxMsgSendSize(size int) OptFunc {
+	return func(o *opts) error {
+		o.maxSendSize = size
+		return nil
+	}
+}
+
 func defaultOpts() opts {
 	return opts{
 		rpcPort:            ":2035",
@@ -143,5 +167,7 @@ func defaultOpts() opts {
 		cert:               filepath.Join("certs", "srv-cert.pem"),
 		priv:               filepath.Join("certs", "srv-key.pem"),
 		tls:                false,
+		maxSendSize:        1024 * 1024,
+		maxRecvSize:        1024 * 1024,
 	}
 }
