@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	ErrTagInUse   = status.Error(codes.AlreadyExists, "tag already in use")
-	ErrTagMissing = status.Error(codes.AlreadyExists, "missing tag")
-	ErrTagInvalid = status.Error(codes.AlreadyExists, "invalid tag")
+	ErrSubdomainInUse   = status.Error(codes.AlreadyExists, "subdomain already in use")
+	ErrSubdomainMissing = status.Error(codes.InvalidArgument, "missing subdomain")
+	ErrSubdomainInvalid = status.Error(codes.InvalidArgument, "invalid subdomain")
 )
 
 const pingInterval = time.Second * 10
@@ -30,16 +30,16 @@ func (s Srv) Listen(stream pb.Fleet_ListenServer) error {
 	if err != nil {
 		return status.Error(codes.Unknown, err.Error())
 	}
-	tag := reply.GetTag()
-	if err := s.verifyTag(tag); err != nil {
+	subdomain := reply.GetSubdomain()
+	if err := s.verifySubdomain(subdomain); err != nil {
 		return err
 	}
 
 	queue := make(chan request)
 	defer close(queue)
 
-	s.store.Put(tag, queue)
-	defer s.store.Delete(tag)
+	s.store.Put(subdomain, queue)
+	defer s.store.Delete(subdomain)
 
 	errCh := make(chan error, 1)
 	defer close(errCh)
@@ -130,15 +130,15 @@ func ping(stream pb.Fleet_ListenServer) error {
 	}
 }
 
-func (s Srv) verifyTag(tag string) error {
-	if tag == "" {
-		return ErrTagMissing
+func (s Srv) verifySubdomain(subdomain string) error {
+	if subdomain == "" {
+		return ErrSubdomainMissing
 	}
-	if strings.Contains(tag, ".") {
-		return ErrTagInvalid
+	if strings.Contains(subdomain, ".") {
+		return ErrSubdomainInvalid
 	}
-	if s.store.Exists(tag) {
-		return ErrTagInUse
+	if s.store.Exists(subdomain) {
+		return ErrSubdomainInUse
 	}
 	return nil
 }

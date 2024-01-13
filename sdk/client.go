@@ -110,8 +110,8 @@ func (c client) ListenAndServe(h http.Handler) error {
 
 func (c client) registerSubdomain() error {
 	err := c.stream.Send(&pb.Reply{
-		Payload: &pb.Reply_Tag{
-			Tag: c.subdomain,
+		Payload: &pb.Reply_Subdomain{
+			Subdomain: c.subdomain,
 		},
 	})
 	if err != nil {

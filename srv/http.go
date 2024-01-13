@@ -15,12 +15,12 @@ func (s Srv) runHTTP() error {
 
 // httpHandler proxies incoming requests to the connected gRPC client.
 func (s Srv) httpHandler(w http.ResponseWriter, r *http.Request) {
-	tag := subdomain(r.Host)
-	if tag == "" {
+	subdomain := subdomain(r.Host)
+	if subdomain == "" {
 		http.Error(w, "page not found", http.StatusNotFound)
 		return
 	}
-	v := s.store.Get(tag)
+	v := s.store.Get(subdomain)
 	if v == nil {
 		http.Error(w, "page not found", http.StatusNotFound)
 		return

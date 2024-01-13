@@ -17,7 +17,7 @@ message Request {
 
 message Reply {
   oneof payload {
-    string tag = 1;
+    string subdomain = 1;
     Response response = 2;
   }
 }
