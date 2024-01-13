@@ -19,7 +19,9 @@ func TestNewID(t *testing.T) {
 
 func TestSubdomain(t *testing.T) {
 	cases := map[string]string{
+		"":                    "",
 		"example.com":         "",
+		"localhost":           "",
 		"foo.localhost":       "foo",
 		"foo.localhost:8080":  "foo",
 		"foo.example.com":     "foo",
