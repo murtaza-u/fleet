@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/murtaza-u/fleet/internal/pb";
+
+service Fleet {
+  rpc Listen(stream Reply) returns (stream Request);
+}
+
+message Request {
+  string id = 1;
+  string method = 2;
+  string url = 3;
+  bytes body = 4;
+}
+
+message Reply {
+  oneof payload {
+    string tag = 1;
+    Response response = 2;
+  }
+}
+
+message Response {
+  string id = 1;
+  bytes data = 2;
+  int32 status = 3;
+}
