@@ -13,6 +13,7 @@ message Request {
   string method = 2;
   string url = 3;
   bytes body = 4;
+  map<string, HeaderFields> header = 5;
 }
 
 message Reply {
@@ -26,4 +27,9 @@ message Response {
   string id = 1;
   bytes data = 2;
   int32 status = 3;
+  map<string, HeaderFields> header = 4;
+}
+
+message HeaderFields {
+  repeated string fields = 1;
 }

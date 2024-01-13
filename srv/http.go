@@ -36,11 +36,16 @@ func (s Srv) httpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body.Close()
+	header := make(map[string]*pb.HeaderFields, len(r.Header))
+	for k, v := range r.Header {
+		header[k] = &pb.HeaderFields{Fields: v}
+	}
 	req := &pb.Request{
 		Id:     newID(),
 		Method: r.Method,
 		Url:    r.URL.String(),
 		Body:   body,
+		Header: header,
 	}
 	reply := make(chan *pb.Response, 1)
 	queue <- request{
@@ -49,6 +54,11 @@ func (s Srv) httpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	res := <-reply
 	close(reply)
+	for k, values := range res.GetHeader() {
+		for _, v := range values.GetFields() {
+			w.Header().Add(k, v)
+		}
+	}
 	if res.GetStatus() != 0 {
 		w.WriteHeader(int(res.GetStatus()))
 	}

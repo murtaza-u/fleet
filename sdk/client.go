@@ -94,6 +94,7 @@ func (c client) ListenAndServe(h http.Handler) error {
 						Id:     req.GetId(),
 						Data:   w.buffer.Bytes(),
 						Status: int32(w.statusCode),
+						Header: w.httpToPbHeader(),
 					},
 				},
 			})
@@ -125,7 +126,12 @@ func (client) process(h http.Handler, req *pb.Request) (*rw, error) {
 	if err != nil {
 		return nil, err
 	}
-	w := new(rw)
+	for k, values := range req.GetHeader() {
+		for _, v := range values.Fields {
+			r.Header.Add(k, v)
+		}
+	}
+	w := newResponseWriter()
 	h.ServeHTTP(w, r)
 	return w, nil
 }
