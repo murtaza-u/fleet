@@ -17,13 +17,16 @@ func newID() string {
 //
 // Example:
 // example.com -> ""
+// foo.localhost -> foo
+// foo.localhost:8080 -> foo
 // foo.example.com -> foo
 // bar.foo.example.com -> bar
 // blah.bar.foo.example.com -> blah
 func subdomain(host string) string {
 	host = strings.TrimSpace(host)
+	host, _, _ = strings.Cut(host, ":")
 	parts := strings.Split(host, ".")
-	if len(parts) == 2 {
+	if len(parts) == 2 && parts[1] != "localhost" {
 		return ""
 	}
 	return parts[0]
