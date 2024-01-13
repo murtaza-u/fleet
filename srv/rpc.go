@@ -4,7 +4,6 @@ import (
 	"net"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/murtaza-u/fleet/internal/pb"
 
@@ -19,8 +18,6 @@ var (
 	ErrSubdomainMissing = status.Error(codes.InvalidArgument, "missing subdomain")
 	ErrSubdomainInvalid = status.Error(codes.InvalidArgument, "invalid subdomain")
 )
-
-const pingInterval = time.Second * 10
 
 // Listen implements the gRPC Fleet service's Listen method. It
 // facilitates communication between HTTP requests and connected gRPC
@@ -45,16 +42,8 @@ func (s Srv) Listen(stream pb.Fleet_ListenServer) error {
 	defer close(errCh)
 
 	wg := new(sync.WaitGroup)
-	wg.Add(2)
+	wg.Add(1)
 	defer wg.Wait()
-
-	go func() {
-		err := ping(stream)
-		if err != nil {
-			errCh <- err
-		}
-		wg.Done()
-	}()
 
 	go func() {
 		defer wg.Done()
@@ -111,25 +100,6 @@ func (s Srv) route(stream pb.Fleet_ListenServer) error {
 	return nil
 }
 
-// ping sends an empty message to the connected client every 10 seconds,
-// maintaining an open connection in case of inactivity.
-func ping(stream pb.Fleet_ListenServer) error {
-	t := time.NewTicker(pingInterval)
-	defer t.Stop()
-
-	for {
-		select {
-		case <-stream.Context().Done():
-			return nil
-		case <-t.C:
-			err := stream.Send(&pb.Request{})
-			if err != nil {
-				return err
-			}
-		}
-	}
-}
-
 func (s Srv) verifySubdomain(subdomain string) error {
 	if subdomain == "" {
 		return ErrSubdomainMissing
@@ -157,6 +127,7 @@ func (s Srv) runRPC() error {
 		}
 		opts = []grpc.ServerOption{grpc.Creds(certs)}
 	}
+	opts = append(opts, gRPCKeepAliveOpts()...)
 	grpcS := grpc.NewServer(opts...)
 	pb.RegisterFleetServer(grpcS, s)
 	if s.reflect {

@@ -40,6 +40,7 @@ func newClient(ctx context.Context, optfns ...OptFunc) (*client, error) {
 		}
 		opts = []grpc.DialOption{grpc.WithTransportCredentials(creds)}
 	}
+	opts = append(opts, gRPCKeepAliveOpt())
 	c, err := grpc.Dial(o.rpcAddr, opts...)
 	if err != nil {
 		return nil, err
@@ -78,11 +79,6 @@ func (c client) ListenAndServe(h http.Handler) error {
 				return fmt.Errorf("[%s] %s", stat.Code(), stat.Message())
 			}
 			return err
-		}
-
-		// ping message
-		if req.GetId() == "" {
-			continue
 		}
 
 		wg.Add(1)
