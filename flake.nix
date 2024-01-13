@@ -5,12 +5,12 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      version = "24.01.13";
+      version = "24.01";
     in
     {
       formatter.${system} = pkgs.nixpkgs-fmt;
-      packages.${system} = {
-        default = pkgs.buildGoModule {
+      packages.${system} = rec {
+        fleet = pkgs.buildGoModule {
           pname = "fleet";
           version = version;
           src = ./.;
@@ -24,6 +24,15 @@
             done
           '';
         };
+        dockerImage = pkgs.dockerTools.buildImage {
+          name = "murtazau/fleet";
+          tag = version;
+          config = {
+            Cmd = [ "${fleet}/bin/fleet" "run" ];
+            WorkingDir = "/data";
+          };
+        };
+        default = fleet;
       };
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [

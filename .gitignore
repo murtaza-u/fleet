@@ -24,3 +24,4 @@ go.work
 /.envrc
 /bin
 /certs
+/result

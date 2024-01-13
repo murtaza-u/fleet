@@ -6,7 +6,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const version = "24.01.13"
+const version = "24.01"
 
 // Run runs the cli application.
 func Run() error {
