@@ -1,0 +1,40 @@
+#!/bin/sh
+
+### change these
+APISRV_STATION_ADDR="localhost"
+IP="0.0.0.0"
+EXPIRY=90
+COUNTRY="US"
+STATE="Texas"
+CITY="Missouri City"
+EMAIL="noreply@example.com"
+
+ca() {
+    openssl req -x509 -newkey rsa:4096 -days $EXPIRY -nodes \
+        -keyout ca-key.pem -out ca-cert.pem \
+        -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=Arfa/OU=CA/CN=ca.example.com/emailAddress=$EMAIL"
+
+    openssl x509 -in ca-cert.pem -noout -text
+}
+
+srv() {
+    openssl req -newkey rsa:4096 -nodes -keyout srv-key.pem \
+        -out srv-req.pem \
+        -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=Arfa/OU=srv/CN=srv.example.com/emailAddress=$EMAIL"
+
+    echo "subjectAltName=DNS:$APISRV_STATION_ADDR,IP:$IP" > srv-ext.cnf
+
+    openssl x509 -req -in srv-req.pem -days $EXPIRY -CA ca-cert.pem \
+        -CAkey ca-key.pem -CAcreateserial -out srv-cert.pem \
+        -extfile srv-ext.cnf
+
+    openssl x509 -in srv-cert.pem -noout -text
+}
+
+# create `certs` directories
+mkdir certs -p
+cd certs
+
+# generate certs & private keys
+ca
+srv
