@@ -4,6 +4,7 @@ go 1.21.4
 
 require (
 	github.com/go-chi/chi/v5 v5.0.11
+	github.com/lucasepe/codename v0.2.0
 	github.com/murtaza-u/dream v0.0.1
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.27.1

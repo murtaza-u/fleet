@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -30,6 +31,14 @@ func (s Srv) Listen(stream pb.Fleet_ListenServer) error {
 	subdomain := reply.GetSubdomain()
 	if err := s.verifySubdomain(subdomain); err != nil {
 		return err
+	}
+	err = stream.Send(&pb.Call{
+		Payload: &pb.Call_ServingAt{
+			ServingAt: fmt.Sprintf(s.servingUrlFormat, subdomain),
+		},
+	})
+	if err != nil {
+		return status.Error(codes.Unknown, err.Error())
 	}
 
 	queue := make(chan request)
@@ -64,7 +73,12 @@ func (s Srv) Listen(stream pb.Fleet_ListenServer) error {
 			return err
 		case req := <-queue:
 			s.store.Put(req.Request.GetId(), req.reply)
-			if err := stream.Send(req.Request); err != nil {
+			err := stream.Send(&pb.Call{
+				Payload: &pb.Call_Request{
+					Request: req.Request,
+				},
+			})
+			if err != nil {
 				return status.Error(codes.Unknown, err.Error())
 			}
 		}

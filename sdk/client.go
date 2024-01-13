@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 
@@ -73,12 +74,16 @@ func (c client) ListenAndServe(h http.Handler) error {
 	}
 
 	for {
-		req, err := c.stream.Recv()
+		payload, err := c.stream.Recv()
 		if err != nil {
 			if stat, ok := status.FromError(err); ok {
 				return fmt.Errorf("[%s] %s", stat.Code(), stat.Message())
 			}
 			return err
+		}
+		req := payload.GetRequest()
+		if req == nil {
+			continue
 		}
 
 		wg.Add(1)
@@ -117,6 +122,18 @@ func (c client) registerSubdomain() error {
 		}
 		return err
 	}
+	payload, err := c.stream.Recv()
+	if err != nil {
+		if stat, ok := status.FromError(err); ok {
+			return fmt.Errorf("[%s] %s", stat.Code(), stat.Message())
+		}
+		return err
+	}
+	servingAt := payload.GetServingAt()
+	if servingAt == "" {
+		return fmt.Errorf("unexpected payload received")
+	}
+	log.Printf("serving at %q\n", servingAt)
 	return nil
 }
 

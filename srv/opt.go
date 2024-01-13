@@ -31,6 +31,8 @@ type opts struct {
 	maxRecvSize int
 	// maximum gRPC send message size
 	maxSendSize int
+	// serving url format
+	servingUrlFormat string
 }
 
 // WithRPCPort sets the port for the gRPC server. Ensure that the chosen
@@ -135,6 +137,15 @@ func WithMaxMsgSendSize(size int) OptFunc {
 	}
 }
 
+// WithServingUrlFormat sets the serving url format.
+//
+// Default: "http://%s.localhost:8080"
+func WithServingUrlFormat(format string) OptFunc {
+	return func(o *opts) {
+		o.servingUrlFormat = format
+	}
+}
+
 func (o opts) validate() error {
 	if !o.tls {
 		return nil
@@ -163,5 +174,6 @@ func defaultOpts() opts {
 		maxRequestBodySize: 1024 * 1024,
 		maxSendSize:        1024 * 1024,
 		maxRecvSize:        1024 * 1024,
+		servingUrlFormat:   "http://%s.localhost:8080",
 	}
 }

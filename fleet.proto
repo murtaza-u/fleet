@@ -5,7 +5,14 @@ package pb;
 option go_package = "github.com/murtaza-u/fleet/internal/pb";
 
 service Fleet {
-  rpc Listen(stream Reply) returns (stream Request);
+  rpc Listen(stream Reply) returns (stream Call);
+}
+
+message Call {
+  oneof payload {
+    string servingAt = 1;
+    Request request = 2;
+  }
 }
 
 message Request {

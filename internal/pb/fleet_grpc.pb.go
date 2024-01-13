@@ -48,7 +48,7 @@ func (c *fleetClient) Listen(ctx context.Context, opts ...grpc.CallOption) (Flee
 
 type Fleet_ListenClient interface {
 	Send(*Reply) error
-	Recv() (*Request, error)
+	Recv() (*Call, error)
 	grpc.ClientStream
 }
 
@@ -60,8 +60,8 @@ func (x *fleetListenClient) Send(m *Reply) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *fleetListenClient) Recv() (*Request, error) {
-	m := new(Request)
+func (x *fleetListenClient) Recv() (*Call, error) {
+	m := new(Call)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func _Fleet_Listen_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Fleet_ListenServer interface {
-	Send(*Request) error
+	Send(*Call) error
 	Recv() (*Reply, error)
 	grpc.ServerStream
 }
@@ -110,7 +110,7 @@ type fleetListenServer struct {
 	grpc.ServerStream
 }
 
-func (x *fleetListenServer) Send(m *Request) error {
+func (x *fleetListenServer) Send(m *Call) error {
 	return x.ServerStream.SendMsg(m)
 }
 
