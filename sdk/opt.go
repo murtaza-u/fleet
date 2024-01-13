@@ -49,10 +49,12 @@ func (o opts) validate() error {
 	if o.subdomain == "" {
 		return fmt.Errorf("missing subdomain")
 	}
-	_, err := os.Stat(o.caCert)
-	if err != nil {
-		return fmt.Errorf("failed to get statistics for path %q: %w",
-			o.caCert, err)
+	if o.tls {
+		_, err := os.Stat(o.caCert)
+		if err != nil {
+			return fmt.Errorf("failed to get statistics for path %q: %w",
+				o.caCert, err)
+		}
 	}
 	return nil
 }
