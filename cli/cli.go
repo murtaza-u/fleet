@@ -19,6 +19,6 @@ func Run() error {
 	app.Authors = []*cli.Author{
 		{Name: "Murtaza Udaipurwala", Email: "murtaza@murtazau.xyz"},
 	}
-	app.Commands = []*cli.Command{runCmd, serveCmd}
+	app.Commands = []*cli.Command{runCmd(), serveCmd()}
 	return app.Run(os.Args)
 }

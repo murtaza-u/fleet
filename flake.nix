@@ -14,7 +14,7 @@
           pname = "fleet";
           version = version;
           src = ./.;
-          vendorHash = "sha256-N29GLrnkLQAZYuU5OzmV2QOAdwv4FWeLbzaJVKP+/J0=";
+          vendorHash = "sha256-TM9ZfQ/YfSYdLbdhDgJUMHbhFfm+iOc70zVRKclAjf0=";
           CGO_ENABLED = 0;
           subPackages = [ "cmd/fleet" ];
           nativeBuildInputs = [ pkgs.installShellFiles ];

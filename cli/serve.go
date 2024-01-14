@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -13,40 +14,64 @@ import (
 
 	"github.com/lucasepe/codename"
 	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 )
 
-var serveCmd = &cli.Command{
-	Name:        "serve",
-	Usage:       "connect to the fleet server and serve incoming requests",
-	UsageText:   "[options] static|proxy",
-	Subcommands: []*cli.Command{staticCmd, proxyCmd},
-	Flags: []cli.Flag{
-		&cli.BoolFlag{
+func serveFlags() []cli.Flag {
+	conf, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	path := filepath.Join(conf, "fleet", "config.yaml")
+
+	return []cli.Flag{
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "address",
+			Aliases: []string{"addr"},
+			Usage:   "Address(host:port) of the Fleet gRPC server",
+			Value:   "localhost:2035",
+		}),
+		altsrc.NewBoolFlag(&cli.BoolFlag{
 			Name:  "tls",
 			Usage: "Use TLS to connect to the Fleet gRPC server",
-		},
-		&cli.StringFlag{
-			Name:    "address",
-			Aliases: []string{"addr", "rpc-addr", "rpc-address"},
-			Usage:   "address(host:port) of the Fleet gRPC server",
-			Value:   "localhost:2035",
-		},
-		&cli.PathFlag{
+		}),
+		altsrc.NewPathFlag(&cli.PathFlag{
 			Name:      "ca-cert",
+			Usage:     "Path to the CA's certificate file",
 			Value:     filepath.Join("certs", "ca-cert.pem"),
 			TakesFile: true,
-		},
+		}),
 		&cli.StringFlag{
 			Name:    "propose-subdomain",
-			Aliases: []string{"subdomain", "propose", "p"},
-			Usage:   "propose a subdomain to register yourself for the current session",
+			Aliases: []string{"p"},
+			Usage:   "Propose a subdomain to register yourself for the current session",
 		},
-	},
+		&cli.PathFlag{
+			Name:      "config",
+			Aliases:   []string{"c"},
+			Usage:     "Path to config file",
+			Value:     path,
+			TakesFile: true,
+		},
+	}
+}
+
+func serveCmd() *cli.Command {
+	flags := serveFlags()
+
+	return &cli.Command{
+		Name:        "serve",
+		Usage:       "Connect to the fleet server and serve incoming requests",
+		UsageText:   "[options] static|proxy",
+		Subcommands: []*cli.Command{staticCmd, proxyCmd},
+		Flags:       flags,
+		Before:      loadConfigIfExists(flags),
+	}
 }
 
 var staticCmd = &cli.Command{
 	Name:      "static",
-	Usage:     "serves files from the provided directory",
+	Usage:     "Serves files from the provided directory",
 	UsageText: "[path]",
 	ArgsUsage: "[path]",
 	Args:      true,
@@ -80,7 +105,7 @@ var staticCmd = &cli.Command{
 
 var proxyCmd = &cli.Command{
 	Name:      "proxy",
-	Usage:     "proxies incoming requests to the provided URL",
+	Usage:     "Proxies incoming requests to the provided URL",
 	UsageText: "URL",
 	ArgsUsage: "URL",
 	Args:      true,
