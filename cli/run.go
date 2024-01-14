@@ -67,6 +67,12 @@ var runCmd = &cli.Command{
 			Value:   1024 * 1024,
 			EnvVars: []string{"FLEET_MAX_GRPC_SEND_SIZE"},
 		},
+		&cli.StringFlag{
+			Name:    "serving-url-format",
+			Usage:   "Serving url format",
+			Value:   "http://%s.localhost:8080",
+			EnvVars: []string{"FLEET_SERVING_URL_FORMAT"},
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		opts := []srv.OptFunc{
@@ -77,6 +83,7 @@ var runCmd = &cli.Command{
 			srv.WithMaxRequestBodySize(ctx.Int64("max-http-request-body-size")),
 			srv.WithMaxMsgRecvSize(ctx.Int("max-grpc-recv-size")),
 			srv.WithMaxMsgRecvSize(ctx.Int("max-grpc-send-size")),
+			srv.WithServingUrlFormat(ctx.String("serving-url-format")),
 		}
 		if ctx.Bool("tls") {
 			opts = append(opts, srv.WithTLS())
