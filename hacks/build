@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+version="$1"
+if [[ -z "$version" ]]; then
+    echo "missing version. Usage: $0 VERSION"
+    exit 1
+fi
+
+mkdir -p build
+
+linux-amd64() {
+    mkdir -p "build/fleet-$version-amd64-linux"
+    GOOS=linux GOARCH=amd64 go build \
+        -o ./build/fleet-24.01-amd64-linux/fleet \
+        ./cmd/fleet/
+}
+
+linux-arm64() {
+    mkdir -p "build/fleet-$version-arm64-linux"
+    GOOS=linux GOARCH=arm64 go build \
+        -o ./build/fleet-24.01-arm64-linux/fleet \
+        ./cmd/fleet/
+}
+
+windows-amd64() {
+    mkdir -p "build/fleet-$version-amd64-windows"
+    GOOS=windows GOARCH=amd64 go build \
+        -o ./build/fleet-24.01-amd64-windows/fleet \
+        ./cmd/fleet/
+}
+
+windows-arm64() {
+    mkdir -p "build/fleet-$version-arm64-windows"
+    GOOS=windows GOARCH=arm64 go build \
+        -o ./build/fleet-24.01-arm64-windows/fleet \
+        ./cmd/fleet/
+}
+
+darwin-amd64() {
+    mkdir -p "build/fleet-$version-amd64-darwin"
+    GOOS=darwin GOARCH=amd64 go build \
+        -o ./build/fleet-24.01-amd64-darwin/fleet \
+        ./cmd/fleet/
+}
+
+darwin-arm64() {
+    mkdir -p "build/fleet-$version-arm64-darwin"
+    GOOS=darwin GOARCH=arm64 go build \
+        -o ./build/fleet-24.01-arm64-darwin/fleet \
+        ./cmd/fleet/
+}
+
+echo "building for linux (amd64)"; linux-amd64
+echo "building for linux (arm64)"; linux-arm64
+
+echo "building for windows (amd64)"; windows-amd64
+echo "building for windows (arm64)"; windows-arm64
+
+echo "building for darwin (amd64)"; darwin-amd64
+echo "building for darwin (arm64)"; darwin-arm64
+
+echo "copying completion"; cp -r ./cli/completion ./build
+
+echo "compressing..."
+mkdir dist
+tar -czvf ./dist/fleet-24.01-amd64-linux.tar.gz ./build/fleet-24.01-amd64-linux
+tar -czvf ./dist/fleet-24.01-arm64-linux.tar.gz ./build/fleet-24.01-arm64-linux
+tar -czvf ./dist/fleet-24.01-amd64-windows.tar.gz ./build/fleet-24.01-amd64-windows
+tar -czvf ./dist/fleet-24.01-arm64-windows.tar.gz ./build/fleet-24.01-arm64-windows
+tar -czvf ./dist/fleet-24.01-amd64-darwin.tar.gz ./build/fleet-24.01-amd64-darwin
+tar -czvf ./dist/fleet-24.01-arm64-darwin.tar.gz ./build/fleet-24.01-arm64-darwin
+tar -czvf ./dist/completion.tar.gz ./build/completion
+
+# os="$1"
+# arch="$2"
+#
+# if [[ -z "$os" || -z "$arch" ]]; then
+#     echo "invalid arguments. Usage: $0 OS ARCH"
+#     exit 1
+# fi
+#
+# case "$os"
+#     linux)
+#         case "$arch"
+#             amd64) linux-amd64 ;;
+#             arm64) linux-arm64 ;;
+#             *) echo "unknown ARCH. Supported: amd64, arm64"; exit 1 ;;
+#         esac
+#         ;;
+#     windows)
+#         case "$arch"
+#             amd64) windows-amd64 ;;
+#             arm64) windows-arm64 ;;
+#             *) echo "unknown ARCH. Supported: amd64, arm64"; exit 1 ;;
+#         esac
+#         ;;
+#     darwin)
+#         case "$arch"
+#             amd64) darwin-amd64 ;;
+#             arm64) darwin-arm64 ;;
+#             *) echo "unknown ARCH. Supported: amd64, arm64"; exit 1 ;;
+#         esac
+#         ;;
+#     *) echo "unknown OS. Supported: linux, windows, darwin"; exit 1 ;;
+# esac
